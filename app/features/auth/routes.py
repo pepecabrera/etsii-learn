@@ -1,5 +1,12 @@
+"""Rutas de registro, inicio y cierre de sesión."""
+
 from flask import flash, redirect, render_template, request, url_for
-from flask_login import current_user, login_required, login_user, logout_user
+from flask_login import (
+    current_user,
+    login_required,
+    login_user,
+    logout_user,
+)
 
 from app.features.auth import auth_bp, services
 from app.features.auth.forms import LoginForm, RegisterForm
@@ -8,17 +15,28 @@ from app.features.auth.forms import LoginForm, RegisterForm
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for("tasks.index"))
+        return redirect(url_for("home.index"))
 
     form = RegisterForm()
+
     if form.validate_on_submit():
-        if services.get_user_by_email(form.email.data) is not None:
-            flash("Ya existe una cuenta con ese correo electrónico.", "danger")
+        try:
+            user = services.create_user(
+                name=form.name.data,
+                email=form.email.data,
+                password=form.password.data,
+                role=form.role.data,
+            )
+        except services.EmailAlreadyRegisteredError as error:
+            form.email.errors.append(str(error))
         else:
-            user = services.create_user(form.name.data, form.email.data, form.password.data)
             login_user(user)
-            flash(f"Te damos la bienvenida, {user.name}. Tu cuenta se ha creado.", "success")
-            return redirect(url_for("tasks.index"))
+            flash(
+                f"Te damos la bienvenida, {user.name}. "
+                "Tu cuenta se ha creado.",
+                "success",
+            )
+            return redirect(url_for("home.index"))
 
     return render_template("auth/register.html", form=form)
 
@@ -26,13 +44,21 @@ def register():
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("tasks.index"))
+        return redirect(url_for("home.index"))
 
     form = LoginForm()
+
     if form.validate_on_submit():
-        user = services.authenticate(form.email.data, form.password.data)
+        user = services.authenticate(
+            email=form.email.data,
+            password=form.password.data,
+        )
+
         if user is None:
-            flash("Correo electrónico o contraseña incorrectos.", "danger")
+            flash(
+                "Correo electrónico o contraseña incorrectos.",
+                "danger",
+            )
         else:
             login_user(user, remember=form.remember.data)
             flash(f"Hola de nuevo, {user.name}.", "success")
@@ -50,10 +76,19 @@ def logout():
 
 
 def safe_next_url():
-    """Flask-Login añade `?next=/pagina` al redirigir al login. Volvemos a esa página
-    después de entrar, pero solo si es una ruta de esta aplicación (empieza por una sola
-    barra); así nadie puede usar el login para redirigir a otro sitio web."""
+    """Acepta únicamente rutas locales para volver después del acceso."""
     next_url = request.args.get("next", "")
-    if next_url.startswith("/") and not next_url.startswith("//"):
-        return next_url
-    return url_for("tasks.index")
+    fallback = url_for("home.index")
+
+    if not next_url.startswith("/") or next_url.startswith("//"):
+        return fallback
+
+    # Evita barras inversas y caracteres que puedan alterar
+    # la interpretación de la URL en el navegador.
+    if "\\" in next_url:
+        return fallback
+
+    if any(ord(character) <= 32 or ord(character) == 127 for character in next_url):
+        return fallback
+
+    return next_url

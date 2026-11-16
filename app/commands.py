@@ -1,47 +1,46 @@
 """
-Comandos de consola propios. Se ejecutan con `flask <comando>`:
+Comandos de consola propios:
 
-    flask init-db     → crea las tablas de la base de datos
-    flask seed-db     → inserta datos de ejemplo (usuarios y tareas)
-    flask reset-db    → borra todo, crea las tablas y vuelve a insertar los datos de ejemplo
+    flask init-db   → crea las tablas que no existen
+    flask seed-db   → carga los datos de ejemplo de autenticación
+    flask reset-db  → borra las tablas, las recrea y carga ejemplos
 """
 
 import click
 
 from app.extensions import db
 from app.features.auth import seeders as auth_seeders
-from app.features.tasks import seeders as tasks_seeders
 
 
 def seed_all():
-    """Cada feature tiene su propio `seeders.py`. El orden importa: las tareas
-    pertenecen a usuarios, así que primero se crean los usuarios."""
+    """Carga los datos de ejemplo de las features habilitadas."""
     auth_seeders.seed()
-    tasks_seeders.seed()
 
 
 def register_commands(app):
     @app.cli.command("init-db")
     def init_db():
-        """Crea las tablas de la base de datos (si no existen).
-
-        Solo se crean las tablas de los modelos que la aplicación ha importado al arrancar
-        (en cada feature, routes.py importa services.py y este importa models.py)."""
+        """Crea las tablas de los modelos importados por la aplicación."""
         db.create_all()
-        click.echo("Tablas creadas.")
+        click.echo("Tablas creadas; las existentes se han conservado.")
 
     @app.cli.command("seed-db")
     def seed_db():
-        """Inserta datos de ejemplo (usuarios y tareas)."""
+        """Carga los datos de ejemplo de autenticación."""
         seed_all()
-        click.echo("Datos de ejemplo insertados.")
+        click.echo("Carga de datos de ejemplo completada.")
 
     @app.cli.command("reset-db")
-    @click.confirmation_option(prompt="Esto borra TODOS los datos de la base de datos. ¿Continuar?")
+    @click.confirmation_option(
+        prompt=(
+            "Esto borra TODAS las tablas de los modelos cargados "
+            "y sus datos. ¿Continuar?"
+        )
+    )
     def reset_db():
-        """Borra todas las tablas, las vuelve a crear e inserta los datos de ejemplo."""
+        """Elimina las tablas, las recrea y carga los datos de ejemplo."""
+        db.session.remove()
         db.drop_all()
-        db.session.remove()  # olvida los objetos cargados en memoria, que ya no existen
         db.create_all()
         seed_all()
         click.echo("Base de datos reiniciada.")
