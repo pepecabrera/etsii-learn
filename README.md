@@ -17,7 +17,7 @@ Responsable de equipo: A pendiente · B Pepe. Responsable de datos: A Adrián ·
 
 ## Tecnologías
 
-- Python 3.12, Flask (blueprints y application factory)
+- Python 3.13, Flask (blueprints y application factory)
 - SQLAlchemy + PyMySQL sobre MariaDB
 - Flask-Login (sesiones) y Flask-WTF (formularios y CSRF)
 - Bootstrap 5 e iconos de Bootstrap (CDN)
@@ -180,7 +180,7 @@ Las demás reglas (bloqueo de actividades con entregas, evaluación solo tras el
 **Local** (necesita MariaDB vacía y un `.env` copiado de `.env.example`; no se versiona):
 
 ```bash
-python3.12 -m venv .venv
+python3.13 -m venv .venv
 source .venv/bin/activate          # Windows: .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements-dev.txt
 flask --app etsii_learn db-upgrade
