@@ -3,7 +3,6 @@
 from app.features.auth import services
 from app.features.auth.models import User
 
-
 DEMO_PASSWORD = "Prueba1234"
 
 DEMO_USERS = [
