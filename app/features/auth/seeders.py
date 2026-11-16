@@ -41,9 +41,7 @@ def seed():
 
         if existing_user is not None:
             if existing_user.role != data["role"]:
-                raise ValueError(
-                    f"La cuenta {data['email']} ya existe con otro rol."
-                )
+                raise ValueError(f"La cuenta {data['email']} ya existe con otro rol.")
             continue
 
         services.create_user(

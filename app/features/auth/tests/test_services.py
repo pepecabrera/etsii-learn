@@ -115,11 +115,7 @@ def test_get_user_by_email_normalizes_input(user):
 
 @pytest.mark.parametrize("normalize_input", [False, True])
 def test_authenticate_accepts_correct_credentials(user, normalize_input):
-    email = (
-        f"  {user.email.upper()}  "
-        if normalize_input
-        else user.email
-    )
+    email = f"  {user.email.upper()}  " if normalize_input else user.email
 
     authenticated_user = services.authenticate(email, "secreto123")
 
@@ -132,7 +128,10 @@ def test_authenticate_rejects_wrong_password(user):
 
 
 def test_authenticate_rejects_unknown_email(app):
-    assert services.authenticate(
-        "nadie@example.com",
-        "secreto123",
-    ) is None
+    assert (
+        services.authenticate(
+            "nadie@example.com",
+            "secreto123",
+        )
+        is None
+    )

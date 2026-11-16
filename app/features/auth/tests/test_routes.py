@@ -163,9 +163,7 @@ def test_login_with_wrong_password(client, user):
     )
 
     assert response.status_code == 200
-    assert "Correo electrónico o contraseña incorrectos." in (
-        response.get_data(as_text=True)
-    )
+    assert "Correo electrónico o contraseña incorrectos." in (response.get_data(as_text=True))
 
     with client.session_transaction() as session:
         assert "_user_id" not in session
@@ -181,9 +179,7 @@ def test_login_with_unknown_email(client):
     )
 
     assert response.status_code == 200
-    assert "Correo electrónico o contraseña incorrectos." in (
-        response.get_data(as_text=True)
-    )
+    assert "Correo electrónico o contraseña incorrectos." in (response.get_data(as_text=True))
 
     with client.session_transaction() as session:
         assert "_user_id" not in session
@@ -213,9 +209,7 @@ def test_login_redirects_to_next_page(client, user, home_url):
         "/ otro-sitio.com",
     ],
 )
-def test_login_rejects_unsafe_next_urls(
-    client, user, home_url, destination
-):
+def test_login_rejects_unsafe_next_urls(client, user, home_url, destination):
     query = urlencode({"next": destination})
 
     response = client.post(

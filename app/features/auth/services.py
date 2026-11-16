@@ -20,9 +20,7 @@ def normalize_email(email):
 
 
 def get_user_by_email(email):
-    return db.session.scalar(
-        db.select(User).where(User.email == normalize_email(email))
-    )
+    return db.session.scalar(db.select(User).where(User.email == normalize_email(email)))
 
 
 def create_user(name, email, password, role=User.ROLE_ALUMNO):
@@ -33,9 +31,7 @@ def create_user(name, email, password, role=User.ROLE_ALUMNO):
         raise ValueError("El rol debe ser alumno o profesor.")
 
     if get_user_by_email(email) is not None:
-        raise EmailAlreadyRegisteredError(
-            "Ya existe una cuenta con ese correo electrónico."
-        )
+        raise EmailAlreadyRegisteredError("Ya existe una cuenta con ese correo electrónico.")
 
     user = User(
         name=name.strip(),

@@ -32,10 +32,7 @@ def register_commands(app):
 
     @app.cli.command("reset-db")
     @click.confirmation_option(
-        prompt=(
-            "Esto borra TODAS las tablas de los modelos cargados "
-            "y sus datos. ¿Continuar?"
-        )
+        prompt=("Esto borra TODAS las tablas de los modelos cargados y sus datos. ¿Continuar?")
     )
     def reset_db():
         """Elimina las tablas, las recrea y carga los datos de ejemplo."""

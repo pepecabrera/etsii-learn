@@ -32,8 +32,7 @@ def register():
         else:
             login_user(user)
             flash(
-                f"Te damos la bienvenida, {user.name}. "
-                "Tu cuenta se ha creado.",
+                f"Te damos la bienvenida, {user.name}. Tu cuenta se ha creado.",
                 "success",
             )
             return redirect(url_for("home.index"))
