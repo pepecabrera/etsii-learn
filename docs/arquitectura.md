@@ -1,230 +1,149 @@
-# ETSII Learn · Arquitectura y stack tecnológico
+# Arquitectura
 
-Versión 0.1 · 13 de noviembre de 2026 · Propuesta de implementación.
+Una sola aplicación Flask con una base de datos MariaDB. Las páginas se generan en el servidor con Jinja y Bootstrap 5. No hay frontend separado ni API REST: un único servidor, una sesión de usuario y un único modelo de datos.
 
-**Estado:** este documento define la estructura objetivo. Los módulos, scripts, comandos y contenedores descritos todavía no están incluidos en el paquete documental.
+## Stack
 
-## 1. Enfoque
+| Componente | Uso |
+| --- | --- |
+| Python 3.12, Flask | Servidor y rutas, organizadas en blueprints con *application factory* |
+| SQLAlchemy + PyMySQL | Acceso a MariaDB (InnoDB, utf8mb4) |
+| Flask-Login | Sesiones y usuario actual |
+| Flask-WTF | Formularios y protección CSRF |
+| Werkzeug | Hash de contraseñas |
+| Jinja + Bootstrap 5 (CDN) | Plantillas e interfaz |
+| pytest, ruff | Pruebas y estilo |
+| Docker Compose, GitHub Actions | Despliegue y CI |
 
-Una sola aplicación Flask organizada en módulos y una base de datos MariaDB. Se renderizan páginas HTML con Jinja. JavaScript mejora filtros o formularios cuando aporta valor; no se construye una aplicación frontend independiente ni una API REST completa por defecto.
+Las versiones exactas se fijan en `requirements.txt` tras comprobar la instalación en Windows y macOS.
 
-Esta estructura permite repartir funcionalidades completas sin mantener dos servidores, dos sesiones de usuario o dos copias del modelo académico.
+## Estructura
 
-## 2. Stack propuesto
-
-| Componente | Decisión inicial | Motivo |
-| --- | --- | --- |
-| Python | Serie 3.12 | Base común propuesta para desarrollo, CI y contenedor. |
-| Flask | Serie 3.1 | Servidor y rutas, con módulos Blueprint. |
-| Jinja | Incluido con Flask | Plantillas compartidas y páginas renderizadas en servidor. |
-| MariaDB | Serie 11.4, InnoDB y utf8mb4 | Persistencia relacional compartida. |
-| PyMySQL | Versión exacta por fijar | Acceso SQL desde Python; soporte de MariaDB. |
-| Flask-WTF | Serie 1.2 | Validación de formularios y protección CSRF. |
-| python-dotenv | Versión exacta por fijar | Carga local de configuración de desarrollo. |
-| Werkzeug | Dependencia compatible con Flask | Funciones de hash y comprobación de contraseñas. |
-| HTML, CSS y JavaScript | Sin framework de frontend | Tecnologías de la asignatura y menor carga inicial. |
-| pytest | Versión exacta por fijar | Pruebas de reglas, rutas e integración. |
-| Docker Compose | Compose v2 | Aplicación y MariaDB con configuración reproducible. |
-| GitHub Actions | Workflow con push | Pruebas y construcción independientes de las PRs. |
-
-Las series son una propuesta de arranque, no una afirmación de que sean las versiones más recientes. En el hito 1 se verificará la instalación en Windows y macOS y se fijarán versiones exactas de paquetes e imágenes. Si la asignatura impone otras versiones, registrar el ajuste y repetir la prueba de instalación.
-
-No se mezclará SQL directo y un ORM en distintas áreas. La propuesta inicial es SQL parametrizado con PyMySQL. Cambiar a un ORM requiere una decisión conjunta antes de crear las tablas y servicios.
-
-## 3. Organización prevista
-
-La estructura siguiente es orientativa; solo README y los seis documentos de docs existen en este paquete.
-
-~~~text
+```text
 etsii-learn/
-  README.md
-  requirements.txt
-  requirements-dev.txt
-  .env.example
-  .gitignore
-  .dockerignore
-  Dockerfile
-  compose.yaml
-  .github/
-    ISSUE_TEMPLATE/
-      work-item.yml
-    workflows/
-      ci.yml
   app/
-    __init__.py
+    __init__.py        # create_app()
     config.py
-    db.py
-    cli.py
-    auth/
+    extensions.py      # db, login_manager, csrf
+    cli.py             # comandos flask
+    templates/base.html
+    static/
+    features/
+      auth/            # Pepe
+      asignaturas/     # José Ángel
+      materiales/      # Vicente
+      actividades/     # Rodrigo
+      entregas/        # Pepe
+      evaluacion/      # Lucas
+      catalogo/        # Antonio
+      aula/            # Antonio y Bruno
+      agenda/          # Alfonso
+      resultados/      # Pablo
+  tests/
+    conftest.py        # base de pruebas, cliente Flask y reloj controlado
+    auth/              # una carpeta por feature, con el mismo nombre
     asignaturas/
     materiales/
     actividades/
     entregas/
     evaluacion/
-    panel/
-    templates/
-      base.html
-      components/
-    static/
-      css/
-        tokens.css
-        components.css
-      js/
-  sql/
-    migrations/
-      001_schema.sql
-  scripts/
-    build.py
-  tests/
-    conftest.py
-    unit/
-    integration/
-    acceptance/
+    catalogo/
+    aula/
+    agenda/
+    resultados/
+    acceptance/        # ciclo completo entre módulos de ambos equipos
+  scripts/build.py
   docs/
-    producto.md
-    organizacion.md
-    arquitectura.md
-    datos-e-integracion.md
-    diseno.md
-    roadmap-y-calidad.md
-~~~
+  Dockerfile
+  compose.yaml
+  requirements.txt
+  requirements-dev.txt
+  .env.example
+```
 
-Cada módulo funcional puede contener routes.py, forms.py, service.py y repository.py. No crear capas vacías sin necesidad, pero conservar una separación clara entre HTTP, reglas de negocio y SQL.
+Cada módulo de `features/` contiene solo lo que necesita:
 
-## 4. Responsabilidades técnicas
+```text
+routes.py     # peticiones HTTP
+forms.py      # formularios (Flask-WTF)
+services.py   # reglas de negocio y permisos
+models.py     # tablas SQLAlchemy (solo en el módulo propietario)
+templates/    # plantillas del módulo
+```
 
-| Capa | Responsabilidad | Evitar |
+## Pruebas
+
+Cada feature tiene su carpeta en `tests/` con el mismo nombre que su módulo, de modo que cada persona trabaja y revisa solo sus pruebas. Dentro de cada carpeta:
+
+- `test_services.py`: reglas de negocio y permisos.
+- `test_routes.py`: rutas, formularios y respuestas con MariaDB de pruebas.
+
+`tests/acceptance/` contiene el recorrido completo (publicar, entregar, evaluar, consultar), que implica a varios módulos. Se usa siempre MariaDB real, nunca SQLite, y una base aislada distinta de la normal.
+
+## Capas
+
+| Capa | Hace | No hace |
 | --- | --- | --- |
-| Ruta Flask | Leer el formulario, recuperar el usuario autenticado, invocar el servicio y renderizar o redirigir. | SQL y reglas duplicadas en cada ruta. |
-| Servicio | Validar permisos y reglas y delimitar la transacción de una operación. | Confiar en el usuario o rol enviado por el navegador. |
-| Repositorio | Ejecutar SQL parametrizado sobre la conexión recibida. | Abrir transacciones o confirmar cambios por su cuenta. |
-| Plantilla | Presentar datos escapados y componentes comunes. | Consultar la base o decidir permisos reales. |
-| JavaScript | Mejorar interacción y mostrar validaciones complementarias. | Convertirse en la única validación de permisos o fechas. |
+| Ruta | Lee el formulario, llama al servicio, renderiza o redirige | Reglas de negocio ni consultas |
+| Servicio | Comprueba permisos y reglas, confirma o deshace la transacción | Fiarse del rol o usuario enviado por el navegador |
+| Modelo | Define tablas y relaciones | Abrir transacciones |
+| Plantilla | Muestra datos | Decidir permisos |
 
-Los servicios de escritura son los puntos de entrada transaccionales. Si necesitan lógica de otro módulo, utilizan funciones de lectura o validación sin commit sobre la misma conexión. No anidar servicios que abran transacciones independientes.
+Un módulo no escribe en las tablas de otro: usa las funciones de su servicio. Si un contrato cambia, se abre un WI y se avisa a los consumidores.
 
-## 5. Arranque y configuración
+## Configuración
 
-La función create_app(test_config=None) crea la aplicación, carga configuración, registra Blueprints, configura CSRF y prepara cierre de conexiones. Importar un módulo no debe crear tablas ni insertar datos.
+`create_app()` crea la aplicación, carga la configuración y registra blueprints, CSRF y Flask-Login. Importar un módulo no debe crear tablas ni insertar datos.
 
-La autenticación guarda únicamente el identificador necesario en la sesión. En cada petición privada se recupera el usuario actual y su rol desde el servidor. No guardar contraseñas, entregas o notas en la cookie de sesión.
-
-| Variable propuesta | Uso |
+| Variable | Uso |
 | --- | --- |
-| SECRET_KEY | Firma de sesiones y CSRF; obligatoria y distinta por entorno. |
-| DB_HOST / DB_PORT | Dirección de MariaDB; en Compose, DB_HOST será db. |
-| DB_NAME | Base de desarrollo o demostración. |
-| DB_USER / DB_PASSWORD | Credenciales del usuario de aplicación, sin privilegios de administración global. |
-| TEST_DB_NAME | Base aislada de pruebas, distinta de DB_NAME y con sufijo _test. |
-| APP_TIMEZONE | Europe/Madrid para entrada y presentación. |
-| LOG_LEVEL | Nivel de registro, sin incluir datos privados o secretos. |
+| `SECRET_KEY` | Firma de sesiones y CSRF; obligatoria, sin valor por defecto |
+| `DB_HOST`, `DB_PORT`, `DB_NAME` | Conexión a MariaDB (en Compose, `DB_HOST=db`) |
+| `DB_USER`, `DB_PASSWORD` | Usuario de la aplicación, sin privilegios globales |
+| `TEST_DB_NAME` | Base de pruebas, distinta de `DB_NAME` y terminada en `_test` |
 
-El archivo .env.example contiene nombres y valores de ejemplo no sensibles. .env queda fuera de Git y de la imagen Docker. La aplicación falla con un mensaje de configuración útil si falta una variable obligatoria; no utiliza una clave secreta constante por defecto.
+`.env` no se versiona ni entra en la imagen Docker. `.env.example` contiene solo valores de ejemplo.
 
-Conservar fechas UTC en MariaDB. Al interpretar un formulario local, convertir desde Europe/Madrid y rechazar horas inexistentes o ambiguas por cambios de horario. Los servicios trabajan con instantes UTC y un reloj sustituible en pruebas.
+## Comandos
 
-## 6. Base de datos y evolución del esquema
-
-- Una única definición inicial del esquema, acordada entre A2, A4, B3 y A5.
-- Scripts SQL numerados y un registro de migraciones aplicadas.
-- No editar retroactivamente una migración que ya utilicen ambos equipos; añadir otra.
-- Configuración común de InnoDB, utf8mb4, colación y modo SQL.
-- Consultas parametrizadas para todos los valores. Los nombres de columnas de ordenación se seleccionan de una lista permitida.
-- Claves foráneas, índices y restricciones descritos en [Datos e integración](datos-e-integracion.md).
-- Los repositorios no conocen contraseñas ni crean conexiones alternativas para eludir transacciones.
-
-Comandos de gestión previstos:
-
-| Comando Flask | Contrato |
+| Comando | Qué hace |
 | --- | --- |
-| db-upgrade | Aplica migraciones pendientes en orden y registra el resultado; no borra datos existentes. |
-| seed-demo | Crea datos ficticios coherentes solo en un entorno de desarrollo o demostración; no duplica los datos si se repite. |
-| create-professor | Crea una cuenta docente de forma controlada y solicita la contraseña sin guardarla en Git. |
+| `flask db-upgrade` | Crea o actualiza el esquema sin borrar datos |
+| `flask seed-demo` | Carga datos ficticios (solo en desarrollo; no duplica al repetirse) |
 
-MariaDB puede confirmar implícitamente operaciones DDL. El aplicador no prometerá rollback total de una migración de esquema: deberá registrar fallos y detenerse sin continuar a ciegas.
+Las cuentas de profesor dependen de la decisión pendiente de alta de profesores (registro en la demo o comando de gestión).
 
-## 7. Convenciones de rutas y errores
+## Rutas y errores
 
-Las rutas usan nombres coherentes en español y url_for para enlazarse. Las lecturas utilizan GET; las mutaciones usan POST y CSRF. No habrá operaciones de borrar, aceptar o evaluar mediante GET.
+- Las lecturas usan GET; crear, modificar y borrar usan POST con CSRF.
+- Tras una escritura correcta se redirige, para evitar reenvíos al recargar.
+- Dos equipos no registran la misma ruta.
 
-Tras una escritura válida se realiza una redirección 303 para evitar repetir el envío al recargar. Las validaciones fallidas conservan los campos y muestran mensajes asociados.
-
-| Situación | Respuesta prevista |
+| Situación | Respuesta |
 | --- | --- |
-| Sin sesión en una página privada | Redirección al acceso; comprobar que la URL de retorno sea local. |
-| Usuario autenticado sin permiso | 403 con página comprensible. |
-| Recurso inexistente | 404. |
-| Formulario inválido | 422 con errores visibles. |
-| CSRF ausente o inválido | 400. |
-| Plazo cerrado, duplicado o estado incompatible | 409 con explicación. |
-| Fallo inesperado | 500 genérico y registro interno sin secretos. |
+| Sin sesión en página privada | Redirige al acceso |
+| Sin permiso | 403 |
+| No existe | 404 |
+| Formulario inválido | Vuelve al formulario con los errores |
+| Plazo cerrado, duplicado o estado incompatible | 409 con explicación |
+| Fallo inesperado | 500 genérico, sin detalles internos |
 
-Las mismas reglas deben aplicarse si se añade una respuesta JSON. No se exige JSON para completar el MVP.
+## Seguridad
 
-## 8. Seguridad necesaria para el ciclo
+- Contraseñas con hash de Werkzeug, nunca en claro.
+- CSRF en todos los formularios que modifican datos.
+- Jinja escapa el texto; no usar `|safe` con contenido de usuarios.
+- Rol, pertenencia a la asignatura y propietario se comprueban en el servidor en cada operación.
+- Consultas siempre parametrizadas (SQLAlchemy lo hace por defecto).
+- Debug solo en local.
 
-- Hash de contraseñas mediante las funciones de Werkzeug; nunca texto plano.
-- CSRF en formularios y peticiones JavaScript que cambian datos.
-- Escape de texto en Jinja; no aplicar safe a contenido de alumnos o profesores.
-- Renderizar contenido recibido con textContent cuando corresponda en JavaScript.
-- Comprobar rol, pertenencia a la asignatura y propietario de cada recurso.
-- Evitar enlaces javascript: u otros esquemas no permitidos.
-- Cookies HttpOnly y SameSite; Secure cuando se utilice HTTPS.
-- Modo debug solo en desarrollo local.
-- Usuario de base de datos de aplicación con permisos limitados.
+## Fechas
 
-Si se incorporan archivos: guardarlos fuera de static, generar nombres internos, limitar tamaño, validar el contenido permitido y servirlos mediante una ruta con permisos. Añadirlos requiere actualizar pruebas y despliegue.
+Se guardan en UTC y se muestran en `Europe/Madrid`. El servidor decide si un plazo está abierto. En pruebas el reloj se sustituye por configuración, nunca por un parámetro de la petición.
 
-## 9. Construcción y CI previstas
+## Construcción, CI y Docker
 
-El punto de entrada será python scripts/build.py. Será un script propio, portable entre Windows y macOS y reutilizado por CI.
-
-Secuencia prevista:
-
-1. Validar archivos y configuración necesarios sin imprimir secretos.
-2. Comprobar que TEST_DB_NAME identifica una base de pruebas y difiere de la base normal.
-3. Preparar o migrar únicamente esa base aislada.
-4. Ejecutar pytest con las pruebas unitarias, de integración y del ciclo completo.
-5. Construir la imagen de la aplicación con Docker.
-6. Devolver cero únicamente si todas las etapas son correctas.
-
-Las dependencias se instalan previamente a partir de ficheros versionados. El script no debe borrar una base que el usuario haya indicado arbitrariamente. La limpieza se limita al entorno de pruebas verificado.
-
-CI se ejecuta con cada push de las ramas activas y puede activarse en PRs entre equipos. Prepara Python, MariaDB y variables de prueba, ejecuta el mismo script y conserva el resultado de pruebas. Una construcción correcta de una rama no sustituye comprobar el resultado de su integración.
-
-## 10. Docker y ejecución local
-
-Dos servicios previstos:
-
-- web: imagen propia de Flask, puerto local 5000, configuración por entorno.
-- db: MariaDB, comprobación de disponibilidad y volumen persistente.
-
-El servicio web debe esperar a que la base esté disponible, no solo a que el contenedor haya arrancado. Las migraciones son un paso explícito y repetible. No depender exclusivamente de scripts de inicialización que solo se ejecutan cuando el volumen está vacío.
-
-El despliegue académico local puede utilizar el servidor de desarrollo en localhost. Una publicación accesible desde Internet requeriría definir servidor WSGI y HTTPS; no forma parte del alcance actual.
-
-No incluir .env, .git, entornos virtuales ni datos locales en el contexto final de la imagen. No utilizar etiquetas latest como sustituto de fijar las versiones comprobadas.
-
-## 11. Registro inicial de decisiones
-
-| ID | Decisión | Estado |
-| --- | --- | --- |
-| D01 | Una aplicación Flask y una base MariaDB | Propuesta inicial |
-| D02 | Jinja y JavaScript sin framework | Restricción del proyecto |
-| D03 | SQL parametrizado con PyMySQL, sin ORM | Propuesta inicial |
-| D04 | Sesión común, roles y permisos en servidor | Necesario para el producto |
-| D05 | Entregas de texto; PDF como ampliación | Propuesta de alcance |
-| D06 | Evaluación tras el cierre y actividad bloqueada con entregas | Propuesta que deben revisar ambos equipos |
-| D07 | Modelo Git | Pendiente de instrucciones docentes |
-
-## 12. Referencias técnicas
-
-Consultadas el 13 de noviembre de 2026. Sirven como apoyo de implementación; no demuestran que el proyecto ya esté construido.
-
-- [Instalación de Flask](https://flask.palletsprojects.com/en/stable/installation/).
-- [Application factories en Flask](https://flask.palletsprojects.com/en/stable/patterns/appfactories/).
-- [Instalación y compatibilidad de PyMySQL](https://pymysql.readthedocs.io/en/latest/user/installation.html).
-- [CSRF en Flask-WTF](https://flask-wtf.readthedocs.io/en/1.2.x/csrf/).
-- [Política de mantenimiento de MariaDB](https://mariadb.org/about/#maintenance-policy).
-- [Workflows de GitHub Actions](https://docs.github.com/en/actions/tutorials/create-an-example-workflow).
-- [Docker Compose](https://docs.docker.com/compose/).
+- `python scripts/build.py` es el script de construcción propio del proyecto; los pasos están en el README. CI lo ejecuta con cada push.
+- Docker Compose levanta `web` (Flask, puerto 5000) y `db` (MariaDB con volumen persistente). `web` espera a que la base esté disponible, y las migraciones se ejecutan como paso explícito.
+- No se incluyen `.env`, `.git` ni entornos virtuales en la imagen. Las imágenes se fijan por versión, no con `latest`.
+- Servir el proyecto en Internet (WSGI y HTTPS) queda fuera del alcance.
