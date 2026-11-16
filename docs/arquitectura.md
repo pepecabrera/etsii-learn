@@ -6,7 +6,7 @@ Una sola aplicación Flask con una base de datos MariaDB. Las páginas se genera
 
 | Componente | Uso |
 | --- | --- |
-| Python 3.12, Flask | Servidor y rutas, organizadas en blueprints con *application factory* |
+| Python 3.13, Flask | Servidor y rutas, organizadas en blueprints con *application factory* |
 | SQLAlchemy + PyMySQL | Acceso a MariaDB (InnoDB, utf8mb4) |
 | Flask-Login | Sesiones y usuario actual |
 | Flask-WTF | Formularios y protección CSRF |
