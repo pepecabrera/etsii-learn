@@ -98,8 +98,7 @@ Fuera del MVP: media por asignatura o nota final, calendario mensual, chat, pago
 ## Criterios de aceptación
 
 **1. Autenticación.** *Como usuario, quiero acceder con mi cuenta.*
-- El registro crea alumnos y rechaza correos duplicados y campos inválidos.
-- No se puede obtener el rol de profesor manipulando el registro.
+- El registro permite crear cuentas de alumnos o profesor y rechaza correos duplicados y campos inválidos.
 - Contraseña incorrecta no inicia sesión; cerrar sesión bloquea las páginas privadas.
 - Las rutas protegidas comprueban rol e identidad en el servidor.
 

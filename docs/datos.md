@@ -17,15 +17,22 @@ No hay tabla de agenda: se calcula a partir de actividades, entregas y evaluacio
 
 Todas usan InnoDB y utf8mb4, con clave primaria `id` autoincremental. Las fechas se guardan en UTC.
 
-### usuarios
+### usuarios — tabla `users`
+
+La autenticación utiliza los nombres físicos heredados de Listo.
+Las referencias a «usuarios» en este documento corresponden a `users`.
 
 | Campo | Regla |
 | --- | --- |
-| nombre | Texto, no vacío |
-| email | Único, normalizado (sin espacios ni mayúsculas) |
-| password_hash | Hash, nunca la contraseña |
-| rol | `ALUMNO` o `PROFESOR` |
-| creado_en | Fecha |
+| id | Clave primaria autoincremental |
+| name | Texto no vacío, máximo 80 caracteres |
+| email | Único, máximo 120 caracteres; sin espacios externos y en minúsculas |
+| password_hash | Hash, nunca la contraseña en claro |
+| role | `alumno` o `profesor`; obligatorio y por defecto `alumno` |
+| created_at | Fecha de creación en UTC |
+
+El registro público permite elegir entre alumno y profesor.
+El servidor rechaza cualquier otro valor de rol.
 
 ### asignaturas
 
@@ -146,6 +153,17 @@ El permiso se calcula a partir del recurso real, no del `asignatura_id` ni del r
 
 Si una operación necesita varios recursos, se bloquean siempre en este orden: actividad, entrega, evaluación.
 
-## Datos de demostración (`seed-demo`)
+## Datos de demostración
 
-Dos profesores, tres alumnos y dos asignaturas, con inscripciones aceptadas, pendientes y rechazadas. Incluye una actividad abierta y otra cerrada con una entrega previa al cierre, una entrega evaluada y otra sin evaluar. Las cuentas son ficticias y sus contraseñas no se guardan en Git.
+El escenario completo previsto incluye dos profesores, tres alumnos
+y dos asignaturas, con inscripciones aceptadas, pendientes y rechazadas.
+También incluye una actividad abierta y otra cerrada, con dos entregas
+anteriores al cierre: una evaluada y otra sin evaluar.
+
+Actualmente, `flask seed-db` crea únicamente los dos profesores y
+los tres alumnos. El resto del escenario se incorporará al implementar
+las features correspondientes.
+
+Las cuentas son ficticias y utilizan la contraseña pública `Prueba1234`,
+exclusivamente para desarrollo y demostración. En la base de datos
+solo se almacena su hash.
