@@ -33,11 +33,10 @@ class Config:
     REMEMBER_COOKIE_HTTPONLY = True
     REMEMBER_COOKIE_SAMESITE = "Lax"
 
-    # Conexión a MariaDB. Se mantienen los valores heredados de LISTO
-    # para no cambiar una conexión que ya pueda estar configurada.
+    # Conexión a MariaDB configurable mediante variables de entorno.
     MARIADB_HOSTNAME = os.getenv("MARIADB_HOSTNAME", "localhost")
     MARIADB_PORT = os.getenv("MARIADB_PORT", "3306")
-    MARIADB_DATABASE = os.getenv("MARIADB_DATABASE", "etsii_db")
+    MARIADB_DATABASE = os.getenv("MARIADB_DATABASE", "etsii_learn_db")
     MARIADB_USER = os.getenv("MARIADB_USER", "etsii_user")
     MARIADB_PASSWORD = os.getenv("MARIADB_PASSWORD", "etsii_password")
 
