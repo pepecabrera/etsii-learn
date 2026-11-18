@@ -45,6 +45,11 @@ def register_extensions(app):
     csrf.init_app(app)
     login_manager.init_app(app)
 
+    # Destino de los usuarios sin sesión al acceder a una ruta privada.
+    login_manager.login_view = "auth.login"
+    login_manager.login_message = "Inicia sesión para acceder a esta página."
+    login_manager.login_message_category = "warning"
+
 
 def register_blueprints(app):
     """Cada feature aporta uno o más blueprints. Para añadir una feature nueva,

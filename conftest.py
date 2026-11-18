@@ -1,12 +1,11 @@
 """
-Fixtures compartidas por todos los tests (pytest carga este fichero automáticamente).
+Fixtures compartidas de pytest.
 
-Los tests usan una base de datos SQLite en memoria en lugar de MariaDB:
-así se ejecutan rápido, no necesitan nada instalado y no tocan datos reales.
+Cada test utiliza una aplicación nueva y SQLite en memoria.
+No se modifica la base de datos de desarrollo.
 
-Ojo: todas las peticiones de un mismo test comparten el contexto de la aplicación
-y la sesión de la base de datos. Es lo que hace sencillo el fixture, a cambio de
-usar un solo cliente HTTP por test.
+Durante cada test se mantiene un contexto de aplicación compartido.
+Estas fixtures están pensadas para utilizar un cliente HTTP por test.
 """
 
 import pytest
@@ -14,40 +13,66 @@ import pytest
 from app import create_app
 from app.extensions import db
 from app.features.auth import services as auth_services
+from app.features.auth.models import User
 
 
 @pytest.fixture
 def app():
-    """Una aplicación configurada para tests, con la base de datos recién creada."""
+    """Aplicación de pruebas con una base de datos vacía."""
     app = create_app(
         {
             "TESTING": True,
+            "SECRET_KEY": "clave-exclusiva-de-tests",
             "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-            "WTF_CSRF_ENABLED": False,  # simplifica el envío de formularios desde los tests
+            "WTF_CSRF_ENABLED": False,
+            "LOGIN_DISABLED": False,
+            "SESSION_COOKIE_SECURE": False,
+            "REMEMBER_COOKIE_SECURE": False,
         }
     )
+
     with app.app_context():
         db.create_all()
-        yield app
-        db.session.remove()
-        db.drop_all()
-        db.engine.dispose()  # cierra la conexión de SQLite
+
+        try:
+            yield app
+        finally:
+            db.session.remove()
+            db.drop_all()
+            db.engine.dispose()
 
 
 @pytest.fixture
 def client(app):
-    """Cliente HTTP de pruebas: permite hacer peticiones sin levantar un servidor."""
+    """Cliente HTTP que permite probar sin levantar un servidor."""
     return app.test_client()
 
 
 @pytest.fixture
 def user(app):
-    """Un usuario registrado (contraseña: secreto123)."""
-    return auth_services.create_user("Ana", "ana@example.com", "secreto123")
+    """Alumno de prueba con contraseña secreto123."""
+    return auth_services.create_user(
+        name="Ana",
+        email="ana@example.com",
+        password="secreto123",
+        role=User.ROLE_ALUMNO,
+    )
 
 
 @pytest.fixture
 def logged_client(client, user):
-    """Cliente HTTP con la sesión iniciada como `user`."""
-    client.post("/auth/login", data={"email": user.email, "password": "secreto123"})
+    """Cliente autenticado como el alumno de prueba."""
+    response = client.post(
+        "/auth/login",
+        data={
+            "email": user.email,
+            "password": "secreto123",
+        },
+    )
+
+    assert response.status_code == 302
+
+    with client.session_transaction() as session:
+        assert session["_user_id"] == str(user.id)
+
     return client

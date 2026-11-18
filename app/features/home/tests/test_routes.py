@@ -13,7 +13,10 @@ def test_index_shows_login_links_to_anonymous_users(client):
     assert "Mis tareas" not in html
 
 
-def test_index_shows_tasks_link_to_logged_users(logged_client):
+def test_index_shows_account_and_logout_to_logged_users(logged_client, user):
     html = logged_client.get("/").get_data(as_text=True)
 
-    assert "Mis tareas" in html
+    assert user.name in html
+    assert "Alumno" in html
+    assert 'action="/auth/logout"' in html
+    assert "Cerrar sesión" in html
