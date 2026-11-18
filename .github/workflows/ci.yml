@@ -1,32 +1,23 @@
-# Integración continua: en cada push o pull request se instala el proyecto,
-# se pasa el linter (ruff) y se ejecutan los tests (pytest).
+# Integración continua: en cada push o pull request se ejecuta el script de
+# construcción del proyecto (scripts/build.py), el mismo que se usa en local.
 name: CI
-
 on:
   push:
   pull_request:
-
+permissions:
+  contents: read
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Descargar el código
         uses: actions/checkout@v5
-
       - name: Instalar Python
         uses: actions/setup-python@v6
         with:
           python-version: "3.13"
           cache: pip
-
       - name: Instalar dependencias
         run: pip install -r requirements.txt
-
-      - name: Linter
-        run: ruff check .
-
-      - name: Formato
-        run: ruff format --check .
-
-      - name: Tests
-        run: pytest
+      - name: Construir y comprobar
+        run: python scripts/build.py
