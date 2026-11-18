@@ -1,5 +1,7 @@
 # ETSII Learn
 
+![CI](https://github.com/pepecabrera/etsii-learn/actions/workflows/ci.yml/badge.svg?branch=trunk)
+
 Plataforma abierta y sencilla para gestionar clases y tareas, con dos roles: **profesor** y **alumno**. Alternativa simple a productos como Blackboard.
 
 **Flujo principal:** el profesor crea una asignatura → el alumno solicita unirse → el profesor acepta y publica una actividad → el alumno entrega antes del cierre → el profesor corrige y devuelve la nota → el alumno la consulta.
@@ -64,14 +66,17 @@ No se versionan `.env`, credenciales ni configuración de IDE.
 
 ### Integración continua
 
-GitHub Actions ejecuta `python scripts/build.py` con cada push:
+GitHub Actions ejecuta `python scripts/build.py` con cada push. El mismo script se puede ejecutar
+en local (`--skip-docker` para omitir Docker). Se detiene en el primer fallo y devuelve 0 únicamente
+si todo ha ido bien:
 
-1. Valida archivos y configuración sin imprimir secretos.
-2. Comprueba que `TEST_DB_NAME` es una base de pruebas distinta de la normal.
-3. Prepara solo esa base aislada.
-4. Ejecuta pytest (unitarias, integración y ciclo completo).
-5. Construye la imagen Docker.
-6. Devuelve 0 únicamente si todo ha ido bien.
+1. Comprueba que existen los ficheros obligatorios (Dockerfile, Compose, requirements...).
+2. Valida `.env.example` y que `.env` no está versionado, sin imprimir secretos.
+3. Linter (`ruff check`).
+4. Formato (`ruff format --check`).
+5. Pruebas (`pytest`, con SQLite en memoria).
+6. Construye la imagen Docker.
+7. Ejecuta las pruebas dentro de la imagen.
 
 Cada tarea debe incluir sus tests, su WI y commits atómicos. Se valorará más la organización que el resultado final.
 
