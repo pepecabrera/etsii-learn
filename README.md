@@ -163,13 +163,13 @@ Fuera del MVP: media por asignatura o nota final, calendario mensual, chat, pago
 ## Reglas de negocio
 
 - El correo es único (sin espacios ni mayúsculas) y las contraseñas se guardan con hash.
-- Una asignatura tiene un solo profesor responsable.
-- Una inscripción por alumno y asignatura. Pendiente o rechazada no da acceso al contenido.
+- Una asignatura tiene un profesor principal y puede tener coprofesores.
+- Una inscripción por alumno y asignatura. Solo «aceptada» da acceso al contenido. «Baja» y «bloqueada», no.
 - Materiales y actividades se publican al instante (sin borradores).
 - Se entrega solo mientras la hora del servidor sea anterior al cierre; no hay entregas tardías.
 - Se evalúa desde el cierre; la evaluación se puede corregir, sin historial.
 - Una actividad con entregas ya no se edita ni se elimina.
-- No se borran usuarios, asignaturas ni inscripciones desde la interfaz.
+- No se borran usuarios, asignaturas ni inscripciones. Las inscripciones cambian de estado.
 - Fechas guardadas en UTC y mostradas en hora de Madrid.
 - Los permisos se comprueban en el servidor en cada operación.
 
@@ -177,7 +177,7 @@ Fuera del MVP: media por asignatura o nota final, calendario mensual, chat, pago
 
 - **Alta de profesores:** el registro público solo crea alumnos. Para la demo, ¿se permite también registrar profesores?
 - **Archivos adjuntos:** tipo, tamaño y almacenamiento privado. Propuesta: empezar con entrega de texto y dejar el archivo como ampliación.
-- **Rechazadas:** ¿puede un alumno volver a solicitar tras un rechazo?
+- **Coprofesor que se va:** ¿se borra su fila o queda en estado «fuera»?
 - **Media:** queda fuera del MVP, salvo que se defina su cálculo.
 
 Las demás reglas (bloqueo de actividades con entregas, evaluación solo tras el cierre, hora de Madrid y comportamiento exacto al cierre) se dan por cerradas.
