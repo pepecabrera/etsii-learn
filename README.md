@@ -107,11 +107,14 @@ Fuera del MVP: media por asignatura o nota final, calendario mensual, chat, pago
 - Contraseña incorrecta no inicia sesión; cerrar sesión bloquea las páginas privadas.
 - Las rutas protegidas comprueban rol e identidad en el servidor.
 
-**3. Asignaturas.** *Como profesor, quiero organizar mis asignaturas y aceptar alumnos.*
-- Crear asignatura con código único, nombre, descripción y curso académico.
-- Solo edito las mías.
-- Veo las solicitudes pendientes y las acepto o rechazo; una decisión repetida o ajena no cambia nada.
-- Aceptar da acceso al aula; rechazar no.
+**3. Asignaturas e inscripciones.** *Como profesor, quiero organizar mis asignaturas y controlar quién entra.*
+- Crear asignatura con código único, nombre, descripción y curso académico. Quien la crea queda como profesor principal.
+- Solo los profesores de la asignatura (principal y coprofesores) la editan. Las asignaturas no se borran.
+- Cada asignatura tiene un código de matrícula secreto que sus profesores pueden regenerar.
+- El principal invita coprofesores por email (solo cuentas de profesor), que aceptan dentro de la app, y puede quitarlos. No puede irse sin transferir la asignatura.
+- Puedo expulsar a un alumno (queda bloqueado) y desbloquearlo (vuelve a necesitar el código).
+- Solo una inscripción aceptada da acceso al aula. Una acción repetida o ajena no cambia nada.
+- El código tiene 8 caracteres (mayúsculas y dígitos sin ambiguos). Tras 5 fallos en 15 minutos, el alumno no puede probar durante 15 minutos.
 
 **4. Catálogo y solicitud.** *Como alumno, quiero explorar asignaturas y solicitar acceso.*
 - El catálogo público solo muestra información pública.
