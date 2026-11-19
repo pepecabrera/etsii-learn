@@ -51,11 +51,11 @@ Para repetir una asignatura otro curso se crea otra con otro código.
 | Campo | Regla |
 | --- | --- |
 | asignatura_id, alumno_id | Únicos como pareja; el alumno tiene rol `ALUMNO` |
-| estado | `PENDIENTE`, `ACEPTADA` o `RECHAZADA` |
+| estado | `ACEPTADA`, `BAJA` o `BLOQUEADA` |
 | solicitada_en | Fecha |
 | resuelta_en | Vacía mientras esté pendiente; obligatoria si se resuelve |
 
-Solo se resuelve una vez y solo el profesor responsable. No hay reapertura ni revocación.
+Los cambios de estado siguen la máquina de estados de «Estados derivados». Las fechas de la inscripción se definirán con el modelo (tarea 1).
 
 ### materiales
 
@@ -113,11 +113,15 @@ El profesor autorizado se deduce de la asignatura; no se guarda.
 | Operación | Visitante | Alumno | Profesor |
 | --- | --- | --- | --- |
 | Ver catálogo y descripción | Sí | Sí | Sí |
-| Crear asignatura | No | No | Sí (queda como responsable) |
-| Editar asignatura | No | No | Solo la propia |
-| Solicitar inscripción | No | Para sí mismo | No |
-| Resolver inscripción | No | No | Solo de su asignatura |
-| Ver materiales y actividades | No | Si está aceptado | Si es responsable |
+| Crear asignatura | No | No | Sí (queda como principal) |
+| Editar asignatura | No | No | Si es su profesor (principal o coprofesor) |
+| Entrar con el código de matrícula | No | Para sí mismo | No |
+| Expulsar o desbloquear a un alumno | No | No | Si es su profesor |
+| Darse de baja | No | Solo la propia, si está aceptado | No |
+| Ver o regenerar el código de matrícula | No | No | Si es su profesor |
+| Invitar o quitar coprofesores, transferir la asignatura | No | No | Solo el principal |
+| Aceptar una invitación de coprofesor | No | No | Solo la suya |
+| Ver materiales y actividades | No | Si está aceptado | Si es su profesor |
 | Publicar o modificar materiales | No | No | Solo en su asignatura |
 | Crear actividad | No | No | Solo en su asignatura |
 | Editar o eliminar actividad | No | No | Solo propia y sin entregas |
@@ -127,11 +131,24 @@ El profesor autorizado se deduce de la asignatura; no se guarda.
 | Ver notas | No | Solo propias | Solo de su asignatura |
 | Consultar agenda | No | Sus asignaturas aceptadas | Sus asignaturas |
 
+«Su asignatura» o «su profesor» incluye al principal y a los coprofesores.
+
 El permiso se calcula a partir del recurso real, no del `asignatura_id` ni del rol que llegue en el formulario.
 
 ## Estados derivados
 
-**Inscripción:** no existe → solicitar → `PENDIENTE` → el profesor decide → `ACEPTADA` o `RECHAZADA`. Una solicitud repetida no crea otra fila.
+**Inscripción:** no existe → código correcto → `ACEPTADA`. Desde `ACEPTADA`: el alumno se sale → `BAJA`, o el profesor lo expulsa → `BLOQUEADA`. Desde `BAJA`: código correcto → `ACEPTADA`. Desde `BLOQUEADA`: el profesor desbloquea → `BAJA`. Volver a entrar reutiliza la misma fila.
+
+```mermaid
+stateDiagram-v2
+    [*] --> ACEPTADA: código correcto
+    ACEPTADA --> BAJA: el alumno se sale
+    ACEPTADA --> BLOQUEADA: el profesor lo expulsa
+    BAJA --> ACEPTADA: código correcto
+    BLOQUEADA --> BAJA: el profesor desbloquea
+```
+
+**Intentos de código:** 5 fallos en 15 minutos impiden probar durante 15 minutos. Los fallos se reinician al acertar o al acabar el bloqueo. No cambian el estado de la inscripción y se guardan aparte.
 
 **Actividad para un alumno** (en este orden; no se guarda en la base):
 
@@ -149,14 +166,15 @@ El permiso se calcula a partir del recurso real, no del `asignatura_id` ni del r
 - Entregar: bloquear la actividad, comprobar usuario, inscripción y plazo, crear o editar la entrega y confirmar.
 - Editar o eliminar una actividad: bloquear la misma fila antes de comprobar que no hay entregas.
 - Evaluar: bloquear la actividad y luego la entrega, comprobar profesor y cierre, y guardar la evaluación.
-- Resolver una inscripción: bloquear su fila y exigir que siga pendiente.
+- Cambiar el estado de una inscripción: bloquear su fila y comprobar que el cambio es válido desde el estado actual.
+- Entrar con el código: como la pareja alumno y asignatura es única, dos peticiones a la vez no crean dos inscripciones. Los fallos se cuentan bloqueando antes los intentos del alumno en esa asignatura.
 
 Si una operación necesita varios recursos, se bloquean siempre en este orden: actividad, entrega, evaluación.
 
 ## Datos de demostración
 
 El escenario completo previsto incluye dos profesores, tres alumnos
-y dos asignaturas, con inscripciones aceptadas, pendientes y rechazadas.
+y dos asignaturas, con inscripciones aceptadas, de baja y bloqueadas.
 También incluye una actividad abierta y otra cerrada, con dos entregas
 anteriores al cierre: una evaluada y otra sin evaluar.
 

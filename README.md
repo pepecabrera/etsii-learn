@@ -4,7 +4,7 @@
 
 Plataforma abierta y sencilla para gestionar clases y tareas, con dos roles: **profesor** y **alumno**. Alternativa simple a productos como Blackboard.
 
-**Flujo principal:** el profesor crea una asignatura → el alumno solicita unirse → el profesor acepta y publica una actividad → el alumno entrega antes del cierre → el profesor corrige y devuelve la nota → el alumno la consulta.
+**Flujo principal:** el profesor crea una asignatura → el alumno entra con el código de matrícula → el profesor publica una actividad → el alumno entrega antes del cierre → el profesor corrige y devuelve la nota → el alumno la consulta.
 
 > **Estado:** planificación. Todavía no hay código, base de datos, contenedores ni pruebas. Los comandos de este README son los que deberán funcionar tras el primer hito.
 
@@ -107,11 +107,14 @@ Fuera del MVP: media por asignatura o nota final, calendario mensual, chat, pago
 - Contraseña incorrecta no inicia sesión; cerrar sesión bloquea las páginas privadas.
 - Las rutas protegidas comprueban rol e identidad en el servidor.
 
-**3. Asignaturas.** *Como profesor, quiero organizar mis asignaturas y aceptar alumnos.*
-- Crear asignatura con código único, nombre, descripción y curso académico.
-- Solo edito las mías.
-- Veo las solicitudes pendientes y las acepto o rechazo; una decisión repetida o ajena no cambia nada.
-- Aceptar da acceso al aula; rechazar no.
+**3. Asignaturas e inscripciones.** *Como profesor, quiero organizar mis asignaturas y controlar quién entra.*
+- Crear asignatura con código único, nombre, descripción y curso académico. Quien la crea queda como profesor principal.
+- Solo los profesores de la asignatura (principal y coprofesores) la editan. Las asignaturas no se borran.
+- Cada asignatura tiene un código de matrícula secreto que sus profesores pueden regenerar.
+- El principal invita coprofesores por email (solo cuentas de profesor), que aceptan dentro de la app, y puede quitarlos. No puede irse sin transferir la asignatura.
+- Puedo expulsar a un alumno (queda bloqueado) y desbloquearlo (vuelve a necesitar el código).
+- Solo una inscripción aceptada da acceso al aula. Una acción repetida o ajena no cambia nada.
+- El código tiene 8 caracteres (mayúsculas y dígitos sin ambiguos). Tras 5 fallos en 15 minutos, el alumno no puede probar durante 15 minutos.
 
 **4. Catálogo y solicitud.** *Como alumno, quiero explorar asignaturas y solicitar acceso.*
 - El catálogo público solo muestra información pública.
@@ -160,13 +163,13 @@ Fuera del MVP: media por asignatura o nota final, calendario mensual, chat, pago
 ## Reglas de negocio
 
 - El correo es único (sin espacios ni mayúsculas) y las contraseñas se guardan con hash.
-- Una asignatura tiene un solo profesor responsable.
-- Una inscripción por alumno y asignatura. Pendiente o rechazada no da acceso al contenido.
+- Una asignatura tiene un profesor principal y puede tener coprofesores.
+- Una inscripción por alumno y asignatura. Solo «aceptada» da acceso al contenido. «Baja» y «bloqueada», no.
 - Materiales y actividades se publican al instante (sin borradores).
 - Se entrega solo mientras la hora del servidor sea anterior al cierre; no hay entregas tardías.
 - Se evalúa desde el cierre; la evaluación se puede corregir, sin historial.
 - Una actividad con entregas ya no se edita ni se elimina.
-- No se borran usuarios, asignaturas ni inscripciones desde la interfaz.
+- No se borran usuarios, asignaturas ni inscripciones. Las inscripciones cambian de estado.
 - Fechas guardadas en UTC y mostradas en hora de Madrid.
 - Los permisos se comprueban en el servidor en cada operación.
 
@@ -174,7 +177,7 @@ Fuera del MVP: media por asignatura o nota final, calendario mensual, chat, pago
 
 - **Alta de profesores:** el registro público solo crea alumnos. Para la demo, ¿se permite también registrar profesores?
 - **Archivos adjuntos:** tipo, tamaño y almacenamiento privado. Propuesta: empezar con entrega de texto y dejar el archivo como ampliación.
-- **Rechazadas:** ¿puede un alumno volver a solicitar tras un rechazo?
+- **Coprofesor que se va:** ¿se borra su fila o queda en estado «fuera»?
 - **Media:** queda fuera del MVP, salvo que se defina su cálculo.
 
 Las demás reglas (bloqueo de actividades con entregas, evaluación solo tras el cierre, hora de Madrid y comportamiento exacto al cierre) se dan por cerradas.
