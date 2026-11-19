@@ -4,7 +4,7 @@
 
 Plataforma abierta y sencilla para gestionar clases y tareas, con dos roles: **profesor** y **alumno**. Alternativa simple a productos como Blackboard.
 
-**Flujo principal:** el profesor crea una asignatura → el alumno solicita unirse → el profesor acepta y publica una actividad → el alumno entrega antes del cierre → el profesor corrige y devuelve la nota → el alumno la consulta.
+**Flujo principal:** el profesor crea una asignatura → el alumno entra con el código de matrícula → el profesor publica una actividad → el alumno entrega antes del cierre → el profesor corrige y devuelve la nota → el alumno la consulta.
 
 > **Estado:** planificación. Todavía no hay código, base de datos, contenedores ni pruebas. Los comandos de este README son los que deberán funcionar tras el primer hito.
 
