@@ -10,7 +10,6 @@ def test_index_shows_login_links_to_anonymous_users(client):
     html = client.get("/").get_data(as_text=True)
 
     assert "Crear cuenta" in html
-    assert "Mis tareas" not in html
 
 
 def test_index_shows_account_and_logout_to_logged_users(logged_client, user):

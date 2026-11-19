@@ -30,12 +30,3 @@ body {
   padding: 1rem;
   font-size: 0.85rem;
 }
-
-/* Tareas completadas */
-.task-done {
-  background-color: #f8f9fa;
-}
-.task-done .task-title {
-  text-decoration: line-through;
-  color: #6c757d;
-}

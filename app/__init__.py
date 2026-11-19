@@ -19,7 +19,6 @@ from app.config import Config
 from app.extensions import csrf, db, login_manager
 from app.features.auth import auth_bp
 from app.features.home import home_bp
-from app.features.tasks import tasks_api_bp, tasks_bp
 
 
 def create_app(config_overrides=None):
@@ -56,8 +55,6 @@ def register_blueprints(app):
     impórtala arriba y regístrala aquí."""
     app.register_blueprint(home_bp)
     app.register_blueprint(auth_bp)
-    app.register_blueprint(tasks_bp)
-    app.register_blueprint(tasks_api_bp)
 
 
 def register_error_handlers(app):
