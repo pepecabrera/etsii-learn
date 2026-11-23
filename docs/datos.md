@@ -41,7 +41,7 @@ El servidor rechaza cualquier otro valor de rol.
 | codigo | Único, no vacío |
 | nombre, descripcion | No vacíos; la descripción es pública |
 | curso_academico | Formato `2026-2027` |
-| profesor_id | Usuario con rol `PROFESOR` |
+| profesor_id | Profesor principal (quien la crea), con rol `PROFESOR` |
 | creado_en | Fecha |
 
 Para repetir una asignatura otro curso se crea otra con otro código.
@@ -52,8 +52,6 @@ Para repetir una asignatura otro curso se crea otra con otro código.
 | --- | --- |
 | asignatura_id, alumno_id | Únicos como pareja; el alumno tiene rol `ALUMNO` |
 | estado | `ACEPTADA`, `BAJA` o `BLOQUEADA` |
-| solicitada_en | Fecha |
-| resuelta_en | Vacía mientras esté pendiente; obligatoria si se resuelve |
 
 Los cambios de estado siguen la máquina de estados de «Estados derivados». Las fechas de la inscripción se definirán con el modelo (tarea 1).
 
