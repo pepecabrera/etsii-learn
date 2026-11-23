@@ -41,7 +41,7 @@ El servidor rechaza cualquier otro valor de rol.
 | codigo | Único, no vacío |
 | nombre, descripcion | No vacíos; la descripción es pública |
 | curso_academico | Formato `2026-2027` |
-| profesor_id | Usuario con rol `PROFESOR` |
+| profesor_id | Profesor principal (quien la crea), con rol `PROFESOR` |
 | creado_en | Fecha |
 
 Para repetir una asignatura otro curso se crea otra con otro código.
