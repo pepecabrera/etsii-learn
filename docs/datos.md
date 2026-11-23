@@ -52,8 +52,6 @@ Para repetir una asignatura otro curso se crea otra con otro código.
 | --- | --- |
 | asignatura_id, alumno_id | Únicos como pareja; el alumno tiene rol `ALUMNO` |
 | estado | `ACEPTADA`, `BAJA` o `BLOQUEADA` |
-| solicitada_en | Fecha |
-| resuelta_en | Vacía mientras esté pendiente; obligatoria si se resuelve |
 
 Los cambios de estado siguen la máquina de estados de «Estados derivados». Las fechas de la inscripción se definirán con el modelo (tarea 1).
 
