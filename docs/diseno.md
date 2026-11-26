@@ -27,6 +27,7 @@ Si el botón principal no cambia de color con esta sobrescritura, se ajusta tamb
 | Éxito, aceptado, evaluado | `success` |
 | Pendiente o atención | `warning` |
 | Error, rechazo, borrar | `danger` |
+| Neutro, inactivo | `secondary` |
 | Información secundaria | `text-secondary` |
 
 ## Botones
@@ -46,15 +47,15 @@ Los estados siempre se muestran con una insignia (`badge`) que lleva texto. El c
 | Vencida sin entrega | `text-bg-danger` |
 | Entregada · pendiente de evaluación | `text-bg-primary` |
 | Evaluada | `text-bg-success` |
-| Inscripción pendiente | `text-bg-warning` |
 | Inscripción aceptada | `text-bg-success` |
-| Inscripción rechazada | `text-bg-danger` |
+| Inscripción de baja | `text-bg-secondary` |
+| Inscripción bloqueada | `text-bg-danger` |
 
 ## Plantilla y componentes compartidos
 
 Todas las páginas heredan de `templates/base.html`, que incluye la barra de navegación, los mensajes `flash` y el bloque de contenido. Se reutilizan siempre los mismos componentes:
 
-- Tarjeta de asignatura (código, nombre, profesor, estado de la solicitud).
+- Tarjeta de asignatura (código, nombre, profesor principal, estado de la inscripción).
 - Fila de actividad (título, asignatura, cierre, insignia de estado).
 - Mensaje de confirmación o error (`alert`).
 - Estado vacío: un texto que explica que no hay datos y, si procede, un botón con la siguiente acción.
@@ -71,11 +72,11 @@ Los cambios en `base.html` o en estos componentes se avisan al resto del equipo 
 
 - El nombre y el rol del usuario aparecen en la cabecera.
 - No se muestran botones de funciones que todavía no existan.
-- Dentro de un aula: el alumno ve Materiales y Actividades; el profesor, Materiales, Actividades e Inscripciones.
+- Dentro de un aula: el alumno ve Materiales y Actividades. El profesor, Materiales, Actividades, Inscripciones y Profesores.
 
 ## Textos y fechas
 
-- Tono directo: «Guardar actividad», «Solicitar inscripción», «Ver evaluación».
+- Tono directo: «Guardar actividad», «Entrar con el código», «Ver evaluación».
 - **Entrega** es el trabajo del alumno. **Actividad** es el encargo del profesor.
 - Fechas con el formato «18 nov 2026, 23:59», en hora de Madrid.
 - Los errores explican cómo arreglarlos («La nota debe estar entre 0 y 10»). No se muestran SQL, trazas ni nombres de tablas.
